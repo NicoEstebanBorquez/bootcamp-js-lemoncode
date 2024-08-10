@@ -8,13 +8,32 @@ type Estado =
   | "EL_NUMERO_ES_MAYOR"
   | "EL_NUMERO_ES_MENOR"
   | "ES_EL_NUMERO_SECRETO"
-  | "const GAME_OVER_MAXIMO_INTENTOS";
+  | "GAME_OVER_MAXIMO_INTENTOS";
 
 const MAXIMO_INTENTOS: number = 5;
 let numeroIntentos: number = 0;
-let a: Estado = "EL_NUMERO_ES_MAYOR";
 
-const hasSuperadoNumeroMaximoIntentos = () => numeroIntentos >= MAXIMO_INTENTOS;
+const hasSuperadoNumeroMaximoIntentos = (): boolean =>
+  numeroIntentos >= MAXIMO_INTENTOS;
+
+const muestraNumeroIntentos = () => {
+  const elementoIntentos = document.getElementById("intentos");
+  if (elementoIntentos) {
+    elementoIntentos.innerHTML = `${numeroIntentos} de ${MAXIMO_INTENTOS}`;
+  }
+};
+
+// "DOMContentLoaded significa que llamará a la función 'muestraNumeroIntentos' una vez que el DOM se haya cargado"
+document.addEventListener("DOMContentLoaded", muestraNumeroIntentos);
+
+const gestionarGameOver = (estado: Estado) => {
+  if (estado === "GAME_OVER_MAXIMO_INTENTOS") {
+    const elementoComprobar = document.getElementById("comprobar");
+    if (elementoComprobar && elementoComprobar instanceof HTMLButtonElement) {
+      elementoComprobar.disabled = true;
+    }
+  }
+};
 
 const muestraMensajeComprobacion = (texto: string, estado: Estado) => {
   let mensaje: string = "";
@@ -39,46 +58,41 @@ const muestraMensajeComprobacion = (texto: string, estado: Estado) => {
       mensaje = "Error! No sé que ha pasado, pero no deberíamos estar aquí.";
       break;
   }
-
-  document.getElementById("resultado").innerHTML = mensaje;
-};
-
-const muestraNumeroIntentos = () => {
-  document.getElementById("intentos").innerHTML =
-    `${numeroIntentos} de ${MAXIMO_INTENTOS}`;
-};
-
-// "DOMContentLoaded significa que llamará a la función 'muestraNumeroIntentos' una vez que el DOM se haya cargado"
-document.addEventListener("DOMContentLoaded", muestraNumeroIntentos);
-
-const gestionarGameOver = (estado) => {
-  if (estado === GAME_OVER_MAXIMO_INTENTOS) {
-    document.getElementById("comprobar").disabled = true;
+  const elementoResultado = document.getElementById("resultado");
+  if (elementoResultado) {
+    elementoResultado.innerHTML = mensaje;
   }
 };
 
-const comprobarNumero = (texto: string) => {
+const comprobarNumero = (texto: string): Estado => {
   const numero: number = parseInt(texto);
   const esNumero: boolean = !isNaN(numero);
 
   if (!esNumero) {
-    return NO_ES_UN_NUMERO;
+    return "NO_ES_UN_NUMERO";
   }
 
   if (hasSuperadoNumeroMaximoIntentos()) {
-    return GAME_OVER_MAXIMO_INTENTOS;
+    return "GAME_OVER_MAXIMO_INTENTOS";
   }
 
   if (numero === numeroParaAcertar) {
-    return ES_EL_NUMERO_SECRETO;
+    return "ES_EL_NUMERO_SECRETO";
   }
 
-  return numero > numeroParaAcertar ? EL_NUMERO_ES_MAYOR : EL_NUMERO_ES_MENOR;
+  return numero > numeroParaAcertar
+    ? "EL_NUMERO_ES_MAYOR"
+    : "EL_NUMERO_ES_MENOR";
 };
 
 const handleCompruebaClick = () => {
-  const texto = document.getElementById("numero").value;
-  const estado = comprobarNumero(texto);
+  let texto: string = "";
+  const inputElement = document.getElementById("numero");
+  if (inputElement && inputElement instanceof HTMLInputElement) {
+    texto = inputElement.value;
+  }
+
+  const estado: Estado = comprobarNumero(texto);
   muestraMensajeComprobacion(texto, estado);
   numeroIntentos++;
   muestraNumeroIntentos();
@@ -86,4 +100,8 @@ const handleCompruebaClick = () => {
 };
 
 const botonComprobar = document.getElementById("comprobar");
-botonComprobar.addEventListener("click", handleCompruebaClick);
+botonComprobar?.addEventListener("click", handleCompruebaClick);
+
+if (botonComprobar) {
+  botonComprobar.addEventListener("click", handleCompruebaClick);
+}
